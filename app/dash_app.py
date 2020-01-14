@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.express as px
 from app import app
+from flask import url_for
 
 
 dash_app = dash.Dash(
@@ -27,33 +28,38 @@ df = df[df.theme!="Mindstorms"]
 df = df[df.theme!="Quatro"]
 df = df[df.set_type=="Normal"]
 
-themes = ['Star Wars', 'City', 'System', 'Creator', 'Harry Potter', 'Technic', 'Friends',
+themes = ['Star Wars', 'City', 'Town', 'Creator', 'Harry Potter', 'Technic', 'Friends',
           'Basic', 'Castle', 'Ninjago', 'Legends of Chima', 'Marvel Super Heroes', 'Pirates']
 features = {'year': 'Year of release', 'price': 'Price', 'num_parts': 'Number of parts', 'ppp': 'Price per part'}
 
-ppp = df.groupby(['year', 'theme'],  as_index=False).agg({'ppp': 'mean'})
+def hex_to_rgb(value):
+    """Return 'rgb(red, green, blue)' for the color given as '#rrggbb'."""
+    value = value.lstrip('#')
+    lv = len(value)
+    return 'rgb'+str(tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)))
 
-print(df.head())
+colors_hexa = ['#1f77b4',
+               '#aec7e8',
+               '#ff7f0e',
+               '#ffbb78',
+               '#2ca02c',
+               '#98df8a',
+               '#d62728',
+               '#ff9896',
+               '#9467bd',
+               '#c5b0d5',
+               '#8c564b',
+               '#c49c94',
+               '#e377c2']
 
+colors = [hex_to_rgb(col) for col in colors_hexa]
+color_discrete_map = dict(zip(themes, colors))
 
 
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink("Link", href="#")),
-        dbc.DropdownMenu(
-            nav=True,
-            in_navbar=True,
-            label="Menu",
-            children=[
-                dbc.DropdownMenuItem("Entry 1"),
-                dbc.DropdownMenuItem("Entry 2"),
-                dbc.DropdownMenuItem(divider=True),
-                dbc.DropdownMenuItem("Entry 3"),
-            ],
-        ),
+        dbc.NavItem(dbc.NavLink("github", href="https://github.com/otwtm/lego"))
     ],
-    brand="Demo",
-    brand_href="#",
     sticky="top",
 )
 
@@ -71,11 +77,12 @@ This is a little application that lets you visually analyse sets of your favouri
 It is built in """, html.A("Plotly Dash", href='https://dash.plot.ly/?_ga=2.191284771.880077638.1578565166-700802424.1578306855', target='_blank'),  """ which is an open-source Python and R framework for building web-based analytic applications.
 
 The application uses data from """, html.A("Brickset.com", href='https://brickset.com/', target='_blank'), """.
-sdfsdfdfsdf
+
+You can find the source code in my github account: """, html.A("https://github.com/otwtm/lego", href='https://github.com/otwtm/lego', target='_blank'),""".
 
 """]
                         ),
-                        dbc.Button("View details", color="secondary"),
+                        #dbc.Button("View details", color="secondary"),
                     ],
                     md=3,
                 ),
@@ -127,14 +134,8 @@ dash_app.layout = html.Div([navbar, body])
 )
 def update_value(theme_input_data, xaxis_feature, yaxis_feature):
     dat = df[df.theme.isin(theme_input_data)]
-    """
-    figure = go.Figure()
-    for theme in theme_input_data:
-        figure.add_trace(go.Scatter(x=dat[dat.theme==theme][xaxis_feature], y=dat[dat.theme==theme][yaxis_feature],
-                                 mode='markers'))
-    """    
-    figure = px.scatter(dat, x=dat[xaxis_feature], y=dat[yaxis_feature], color='theme', size='num_parts', opacity=0.5,
-                        hover_name="set_name", hover_data=["set_num"])
+    figure = px.scatter(dat, x=dat[xaxis_feature], y=dat[yaxis_feature], color='theme', size='num_parts', opacity=0.7,
+                        hover_name="set_name", hover_data=["set_num"], color_discrete_map=color_discrete_map)
 
 
     figure.for_each_trace(
@@ -147,7 +148,7 @@ def update_value(theme_input_data, xaxis_feature, yaxis_feature):
     figure.update_layout(
         legend=go.layout.Legend(
             x=0,
-            y=-0.3,
+            y=-0.2,
             traceorder="normal",
             font=dict(
                 family="sans-serif",
@@ -156,7 +157,8 @@ def update_value(theme_input_data, xaxis_feature, yaxis_feature):
             ),
             borderwidth=0,
             orientation="h"
-        )
+        ),
+        height = 600
     )
 
     graph = dcc.Graph(

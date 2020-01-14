@@ -8,12 +8,3 @@ def app1_template():
     return render_template(url_for('dash_app'), dash_url = '/')
 
 
-"""
-def index():
-    return render_template(url_for('index'))
-"""
-
-
-"""
-@app.route('/dash_app')
-"""
