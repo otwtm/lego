@@ -8,7 +8,9 @@ import plotly.graph_objs as go
 import plotly.express as px
 from app import app
 from flask import url_for
+import os
 
+THIS_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 dash_app = dash.Dash(
     __name__,
@@ -17,7 +19,7 @@ dash_app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP]
 )
 
-df = pd.read_csv("data/brickset_data.csv")
+df = pd.read_csv(os.path.join(THIS_FOLDER, "data/brickset_data.csv"))
 df = df[df.num_parts>10]
 df = df[df.theme!="Duplo"]
 df = df[df.theme!="Action Wheelers"]
